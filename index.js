@@ -11,9 +11,11 @@ const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
 var app = new httpServer(micro(async (req, res) => {
 	const { d } = req.params,
-		{ name, token } = jwt.verify(d, config.jwtSecret);
-	console.log(req.params, name, token);
-	if (!name || !token) socket.disconnect(true);
+		{ name, password } = jwt.verify(d, config.jwtSecret);
+	console.log(req.params, name, password);
+	// Verify that this is valid streamer
+	if (!name || !password) socket.disconnect(true);
+	// We want to keep the connection always open
 	res.connection.setTimeout(0);
 
 	req.on('data', data => {
@@ -29,7 +31,7 @@ socket.on('connection', async (socket) => {
 	console.log(params);
 	const { d } = params;
 	const { name } = jwt.verify(d, config.jwtSecret);
-	console.log(name, token);
+	console.log(name);
 	// Verify that the room exists
 	const room = await fetch(
 		`${config.apiURL}/room`,
@@ -57,7 +59,7 @@ remote.on('connection', function (socket) {
 					`${config.apiURL}/room/remote`,
 					{
 						body: {
-							token: params.password
+							password: params.password
 						}
 					}
 				);
